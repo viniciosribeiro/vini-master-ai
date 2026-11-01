@@ -23,7 +23,7 @@ async function log(env,agent,description,mission=null){
 async function recall(env,content){
  const query=searchTerms(content);if(!query)return [];
  try{
-  const r=await env.DB.prepare('SELECT m.id,m.role,m.content,m.created_at FROM messages_fts f JOIN messages m ON f.rowid=m.id WHERE messages_fts MATCH ? ORDER BY m.id DESC LIMIT 10').bind(query).all();
+  const r=await env.DB.prepare('SELECT m.id,m.role,m.content,m.created_at FROM messages_fts JOIN messages m ON messages_fts.rowid=m.id WHERE messages_fts MATCH ? ORDER BY m.id DESC LIMIT 10').bind(query).all();
   return r.results||[];
  }catch{return [];}
 }
