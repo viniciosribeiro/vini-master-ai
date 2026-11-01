@@ -1,48 +1,36 @@
-# VINI MASTER AI — Alpha 0.2
+# VINI MASTER AI — Alpha 0.2.1
 
-**Seu escritório isométrico de agentes virtuais na Cloudflare.** A interface foi desenvolvida para funcionar no navegador do celular ou computador. Não exige que seu computador pessoal fique ligado quando estiver publicada.
+Central visual de agentes de IA para a Cloudflare, desenvolvida com Workers, Workers AI, Workflows e banco D1.
 
-## O que já está implementado
+**[Implantar com Cloudflare](https://deploy.workers.cloudflare.com/?url=https://github.com/viniciosribeiro/vini-master-ai)** · [Passos e segurança](DEPLOY-CLOUDFLARE.md)
 
-- Painel visual, responsivo, com **seis estações isométricas** clicáveis, indicadores reais e linha do tempo.
-- Chat com supervisor usando **Cloudflare Workers AI (GLM-4.7-Flash)** ou **NVIDIA NIM (Nemotron 3 Ultra)**.
-- Seleção automática: tenta Cloudflare primeiro e recorre à NVIDIA quando disponível; também é possível escolher somente um provedor.
-- **Missões duráveis via Cloudflare Workflows**: um supervisor planeja, cinco especialistas fazem análises e o supervisor consolida o relatório. A página pode ser fechada durante a execução.
-- **Memória D1**: grava todas as mensagens enviadas e respostas recebidas, indexa o texto com SQLite FTS5, oferece busca e guarda memórias fixadas. Ao escrever "lembre que ...", o conteúdo também é fixado.
-- Histórico de missões, resultados por agente e atividades; exportação e exclusão de conversas.
-- Chave privada obrigatória para a API, armazenada apenas na sessão atual do navegador. Nenhum token é publicado no repositório.
-- Limite inicial: **3 novas missões por dia**, para reduzir risco de consumir a cota gratuita inadvertidamente.
+## Funcionalidades
 
-**Importante:** na Alpha 0.2 os agentes geram **análises, relatórios, ideias e código textual**; eles **não** editam arquivos externos, não executam comandos arbitrários, não dão merge e não publicam sites. A visualização reflete execuções registradas no D1, não animações falsas de trabalho. A memória preserva os registros, mas a IA recupera apenas o histórico recente, memórias fixadas e trechos antigos pertinentes; nenhuma IA consegue considerar todas as mensagens simultaneamente.
+- Painel responsivo com escritório virtual isométrico, seis estações selecionáveis e indicadores baseados em registros reais.
+- Chat do supervisor com **Cloudflare Workers AI** e opção de **NVIDIA NIM**.
+- Missões duráveis via Workflows: supervisor planeja, cinco especialistas analisam sequencialmente e supervisor consolida.
+- Histórico de mensagens no D1, índice FTS5 de busca por termos, memórias fixadas e comando **lembre que...**.
+- Pesquisa de conversas, exportação JSON de dados principais e exclusão de mensagens/memórias selecionadas.
+- Proteção de API pelo segredo **MASTER_TOKEN**; sem segredo válido, chat e memória ficam bloqueados.
+- Limite inicial de três novas missões por dia para reduzir consumo de cotas.
 
-## O que falta para ficar online
+## Começar
 
-Este projeto contém o **código-fonte completo, preparado para publicação via GitHub integrado à Cloudflare**. **Não foi publicado na conta Cloudflare**; é necessário conectar a conta; o banco D1 será criado automaticamente no primeiro deploy. Leia `DEPLOY-CLOUDFLARE.md` para a implantação sem usar computador local.
+1. Clique em [Implantar com Cloudflare](https://deploy.workers.cloudflare.com/?url=https://github.com/viniciosribeiro/vini-master-ai).
+2. Configure o segredo obrigatório **MASTER_TOKEN** com uma chave longa e exclusiva (40+ caracteres).
+3. Aguarde a Cloudflare concluir e abra o endereço workers.dev que ela apresentar.
+4. Clique no cadeado 🔐 na interface, informe o mesmo segredo e use o chat.
+5. Para a NVIDIA, configure opcionalmente NVIDIA_API_KEY como segredo de runtime.
 
-## Organização
+**Atenção:** não há confirmação de deploy real até a Cloudflare gerar e testar o endereço. O código não permite alterar repositórios, executar software externo ou publicar aplicações: os agentes geram análises e relatórios. O histórico começa com as conversas feitas neste aplicativo; não importa automaticamente chats anteriores do ChatGPT.
 
-- `public/index.html`, `styles.css`, `app.js`, `office.svg` — interface responsiva.
-- `src/index.js` — Worker e proteções HTTP.
-- `src/api.js` — APIs do painel, conversa, memória e missões.
-- `src/ai.js` — conexão com modelos NVIDIA e Cloudflare.
-- `src/workflow.js` — tarefas duráveis dos seis agentes.
-- `schema.sql` — tabelas D1 e índice pesquisável FTS5.
-- `src/bootstrap.js` — cria tabelas D1 na primeira requisição autenticada, sem executar SQL no painel.
-- `wrangler.jsonc` — bindings Cloudflare.
-- `tests` — testes de modelos, autenticação e banco SQLite.
+## Estrutura
 
-## Segurança e privacidade
+`public/`: interface responsiva; `src/`: API, modelos, memória e Workflows; `wrangler.jsonc`: recursos Cloudflare; `tests/`: verificações de lógica e segurança; `DEPLOY-CLOUDFLARE.md`: guia.
 
-- Crie a variável secreta `MASTER_TOKEN` (mínimo 24 caracteres; recomendado 40+ aleatórios). **Não** coloque a chave em `wrangler.jsonc` ou no GitHub.
-- O segredo opcional `NVIDIA_API_KEY` deve ser configurado pela Cloudflare. A integração com NVIDIA só funciona depois disso.
-- Conversas e memórias são privadas **somente se a chave for mantida secreta**. Para uso em equipe, adicionar Cloudflare Access e contas separadas antes de produção.
-- Evite salvar senhas ou dados especialmente sensíveis nas conversas. Quando NVIDIA for utilizada, o contexto relevante será enviado também ao provedor NVIDIA para gerar a resposta.
-- O histórico cresce no D1 conforme o uso; limites e retenção do plano Cloudflare continuam valendo. Não se trata de armazenamento absolutamente ilimitado.
+## Privacidade
 
-## Testes executados nesta entrega
+O repositório de origem é **público**, mas não contém chaves nem conversas. Históricos são armazenados no D1 da conta que fizer o deploy, não no GitHub. Quando NVIDIA é selecionada, o contexto das mensagens necessário à resposta é enviado à NVIDIA. Não cole credenciais no chat.
 
-- Testes Node.js: `node --test tests/ai.test.mjs`.
-- Testes SQL com SQLite: `python -m unittest discover -s tests -p 'test_*.py' -v`.
-- Verificação sintática de JS com `node --check`.
+Os provedores possuem cotas e regras próprias; a disponibilidade gratuita não é ilimitada.
 
-Ainda é necessário um **teste de implantação real na Cloudflare**, incluindo Workers AI, Workflows e o banco D1 remoto, antes de declarar a aplicação pronta para produção.
