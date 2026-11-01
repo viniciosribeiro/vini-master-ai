@@ -10,7 +10,7 @@ export const MAX_MESSAGE=8000;
 export const MAX_MISSION=12000;
 export const normalizeProvider=x=>['auto','cloudflare','nvidia'].includes(x)?x:'auto';
 export function searchTerms(input){
- const a=[...new Set((String(input||'').toLowerCase().match(/[\\p{L}\\p{N}]{3,}/gu)||[]).filter(x=>x.length<36))];
+ const a=[...new Set((String(input||'').toLowerCase().match(/[\p{L}\p{N}]{3,}/gu)||[]).filter(x=>x.length<36))];
  return a.slice(0,7).map(x=>String.fromCharCode(34)+x+String.fromCharCode(34)).join(' OR ');
 }
 export function asText(result){
