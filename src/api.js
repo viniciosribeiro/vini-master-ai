@@ -60,7 +60,7 @@ export async function handleAPI(req,env){
    const current=await env.DB.prepare("SELECT value FROM settings WHERE key='provider'").first();
    const provider=normalizeProvider(data.provider||current?.value||'auto');
    await env.DB.prepare("INSERT INTO messages(role,content) VALUES('user',?)").bind(message).run();
-   const match=message.match(/^(?:por favor[,:]?\\s*)?(?:lembre(?:-se)?|guarde|memorize|não esqueça)(?:\\s+de)?(?:\\s+que)?[,\\s:]+(.+)/iu);
+   const match=message.match(/^(?:por favor[,:]?\s*)?(?:lembre(?:-se)?|guarde|memorize|não esqueça)(?:\s+de)?(?:\s+que)?[,\s:]+(.+)/iu);
    const saved=match?.[1]?.trim();
    if(saved&&saved.length>=3){
     await env.DB.prepare('INSERT INTO memories(id,content) VALUES(?,?)').bind(crypto.randomUUID(),saved.slice(0,1200)).run();
